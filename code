@@ -1,0 +1,108 @@
+from selenium.webdriver.chrome.service import Service
+import time
+import undetected_chromedriver as uc
+import sys
+import os
+#from fp.fp import FreeProxy
+from fake_useragent import UserAgent
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver import Chrome
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from fake_useragent import UserAgent
+
+s = Service("E:/data_science/13..WEB_Scaping/SELENIUM/chromedriver-win64/chromedriver-win64/chromedriver.exe")
+
+#options = webdriver.ChromeOptions()
+#options.add_argument('--user-data-dir=C:\Users\ANSHU SURYAVANSHI\AppData\Local\Google\Chrome\UserData\Default')
+#driver = webdriver.Chrome(service = s,options=options)
+# Set up Chrome options
+options = Options()
+# Set up User Agent spoofing
+ua = UserAgent()
+user_agent = ua.random
+options.add_argument(f'user-agent={user_agent}')
+# Add options to bypass restrictions, for example:
+options.add_argument('--ignore-certificate-errors')
+options.add_argument('--disable-web-security')
+options.add_argument('--disable-popup-blocking')
+options.add_argument('--no-sandbox')
+options.add_argument('--start-maximized')
+#options.add_argument('--start-fullscreen')
+options.add_argument('--single-process')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument("--incognito")
+options.add_argument('--disable-blink-features=AutomationControlled')
+options.add_argument('--disable-blink-features=AutomationControlled')
+options.add_experimental_option('useAutomationExtension', False)
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_argument("disable-infobars")
+options.add_argument('--disable-gpu')
+'''
+# Replace these with your actual proxy details
+proxy_ip = "123.45.67.89"
+proxy_port = "8080"
+proxy = f"http://{proxy_ip}:{proxy_port}"
+options.add_argument(f'--proxy-server={proxy}')'''
+
+driver = webdriver.Chrome(service = s,options = options)
+driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+    "source":
+        "const newProto = navigator.__proto__;"
+        "delete newProto.webdriver;"
+        "navigator.__proto__ = newProto;"
+})
+
+wait = WebDriverWait(driver, 20)  # Adjust the timeout as needed
+driver.get('https://www.acnc.gov.au/')
+time.sleep(1)
+
+link_1 =  wait.until(EC.visibility_of_element_located((By.XPATH,'//*[@id="block-main-site-navigation"]/div/ul/li[3]/a')))
+link_1.click()
+
+search_box = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="search"]/form/div[1]/div[1]/div/input')))
+#search_box.send_keys("42859078945")
+search_box.send_keys("45912758247")
+
+link_2 = wait.until(EC.visibility_of_element_located((By.XPATH,'//*[@id="search"]/form/div[1]/div[3]/button')))
+link_2.click()
+
+search_box_2 = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="search"]/div[1]/div[2]/div/table/tbody/tr/td[1]/a')))
+search_box_2.click()
+#//*[@id="search"]/div[1]/div[2]/div/table/tbody/tr/td[1]/a
+
+search_box_people = wait.until(EC.visibility_of_element_located((By.XPATH, '/html/body/div[1]/div/div/div[2]/header/div[4]/div[3]/div/div/nav/ul/li[3]/a/span')))
+search_box_people.click()
+
+#total = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="charity"]/div[2]/div/div/section/div/div/a/div[1]/h4')))
+
+container = wait.until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/div/div/div[2]/div[2]/div/main/div/div/div[2]/div/div/section/div'))) #not used but still i write to check
+new_page_content = driver.page_source
+
+# Scroll to the bottom of the container to load all content
+#driver.execute_script("arguments[0].scrollIntoView();", container)
+# Wait a bit to ensure all content is loaded (adjust the time as needed)
+time.sleep(2)
+'''find people name but webpage is dynamic 
+so webpage code u return might change so you find a way i wrote hardcode below but this is not right'''
+i=1
+while True:
+    element = wait.until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/div/div/div[2]/div[2]/div/main/div/div/div[2]/div/div/section/div/div[{}]/a/div[1]/h4'.format(i))))
+    try:
+        print(element.text)
+    except TimeoutException:
+        print("TimeoutException occurred. No more elements found.")
+        break
+    except:
+        break
+    
+        
+    i=i+1  
+driver.quit()
